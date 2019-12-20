@@ -554,6 +554,8 @@ pub trait Context<T, E>: context::private::Sealed {
         F: FnOnce() -> C;
 }
 
+pub use fmt::*;
+
 // Not public API. Referenced by macro-generated code.
 #[doc(hidden)]
 pub mod private {
