@@ -193,7 +193,7 @@ impl Error {
         let inner = Box::new(ErrorImpl {
             vtable,
             backtrace,
-            span_backtrace: dbg!(span_backtrace),
+            span_backtrace: span_backtrace,
             _object: error,
         });
         // Erase the concrete type of E from the compile-time type system. This
