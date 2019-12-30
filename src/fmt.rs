@@ -24,11 +24,9 @@ impl ErrorFormatter for RootCauseFirst {
     ) -> fmt::Result {
         let errors = Chain::new(error).rev().enumerate();
 
-        writeln!(f)?;
-
         for (n, error) in errors {
-            write!(Indented::numbered(f, n), "{}", error.to_string().trim())?;
             writeln!(f)?;
+            write!(Indented::numbered(f, n), "{}", error.to_string().trim())?;
         }
 
         if let Some(span_context) = span_backtrace.as_ref() {
