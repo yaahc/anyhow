@@ -20,4 +20,4 @@ thiserror = "1.0"
 trybuild = "1.0"
 
 [dependencies]
-tracing-error = { path = "/home/jlusby/git/rust/tracing/tracing-error" }
+tracing-error = { git = "https://github.com/yaahc/tokio-trace-nursery.git", branch = "eliza/error-sketch" }
