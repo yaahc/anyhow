@@ -27,7 +27,7 @@ impl ErrorFormatter for RootCauseFirst {
         writeln!(f)?;
 
         for (n, error) in errors {
-            write!(Indented::numbered(f, n), "{}", error)?;
+            write!(Indented::numbered(f, n), "{}", error.to_string().trim())?;
             writeln!(f)?;
         }
 
