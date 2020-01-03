@@ -31,7 +31,7 @@ impl ErrorFormatter for RootCauseFirst {
 
         if let Some(span_context) = span_backtrace.as_ref() {
             let span_backtrace = span_context.span_backtrace();
-            write!(f, "\n\nSpan Backtrace:\n")?;
+            write!(f, "\n\nContext:\n")?;
             write!(f, "{}", span_backtrace)?;
         }
 
@@ -75,7 +75,7 @@ impl ErrorFormatter for RootCauseLast {
 
         if let Some(span_context) = span_backtrace.as_ref() {
             let span_backtrace = span_context.span_backtrace();
-            write!(f, "\n\nSpan Backtrace:\n")?;
+            write!(f, "\n\nContext:\n")?;
             write!(f, "{}", span_backtrace)?;
         }
 
