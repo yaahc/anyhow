@@ -2,8 +2,13 @@ use crate::chain::Chain;
 use crate::error::ErrorImpl;
 use core::fmt::{self, Debug, Write};
 
+#[cfg(backtrace)]
+use crate::backtrace::Backtrace;
+
 pub struct ErrorInfo<'a> {
     error: &'a (dyn std::error::Error + 'static),
+    #[cfg(backtrace)]
+    backtrace: &'a Backtrace,
     span_backtrace: Option<&'a tracing_error::Context>,
 }
 
@@ -18,6 +23,8 @@ impl ErrorFormatter for RootCauseFirst {
     fn fmt_error<'a>(
         ErrorInfo {
             error,
+            #[cfg(backtrace)]
+            backtrace,
             span_backtrace,
         }: ErrorInfo<'a>,
         f: &mut fmt::Formatter,
@@ -38,17 +45,14 @@ impl ErrorFormatter for RootCauseFirst {
         #[cfg(backtrace)]
         {
             use std::backtrace::BacktraceStatus;
-
-            if let Some(backtrace) = error.backtrace() {
-                if let BacktraceStatus::Captured = backtrace.status() {
-                    let mut backtrace = backtrace.to_string();
-                    if backtrace.starts_with("stack backtrace:") {
-                        // Capitalize to match "Caused by:"
-                        backtrace.replace_range(0..7, "Stack B");
-                    }
-                    backtrace.truncate(backtrace.trim_end().len());
-                    write!(f, "\n\n{}", backtrace)?;
+            if let BacktraceStatus::Captured = backtrace.status() {
+                let mut backtrace = backtrace.to_string();
+                if backtrace.starts_with("stack backtrace:") {
+                    // Capitalize to match "Caused by:"
+                    backtrace.replace_range(0..7, "Stack B");
                 }
+                backtrace.truncate(backtrace.trim_end().len());
+                write!(f, "\n\n{}", backtrace)?;
             }
         }
 
@@ -60,6 +64,8 @@ impl ErrorFormatter for RootCauseLast {
     fn fmt_error<'a>(
         ErrorInfo {
             error,
+            #[cfg(backtrace)]
+            backtrace,
             span_backtrace,
         }: ErrorInfo<'a>,
         f: &mut fmt::Formatter,
@@ -83,16 +89,14 @@ impl ErrorFormatter for RootCauseLast {
         {
             use std::backtrace::BacktraceStatus;
 
-            if let Some(backtrace) = error.backtrace() {
-                if let BacktraceStatus::Captured = backtrace.status() {
-                    let mut backtrace = backtrace.to_string();
-                    if backtrace.starts_with("stack backtrace:") {
-                        // Capitalize to match "Caused by:"
-                        backtrace.replace_range(0..7, "Stack B");
-                    }
-                    backtrace.truncate(backtrace.trim_end().len());
-                    write!(f, "\n\n{}", backtrace)?;
+            if let BacktraceStatus::Captured = backtrace.status() {
+                let mut backtrace = backtrace.to_string();
+                if backtrace.starts_with("stack backtrace:") {
+                    // Capitalize to match "Caused by:"
+                    backtrace.replace_range(0..7, "Stack B");
                 }
+                backtrace.truncate(backtrace.trim_end().len());
+                write!(f, "\n\n{}", backtrace)?;
             }
         }
 
@@ -123,6 +127,8 @@ impl ErrorImpl<()> {
         RootCauseFirst::fmt_error(
             ErrorInfo {
                 error,
+                #[cfg(backtrace)]
+                backtrace: self.backtrace(),
                 span_backtrace: self.span_backtrace.as_ref(),
             },
             f,
