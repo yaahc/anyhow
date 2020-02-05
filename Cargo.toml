@@ -20,4 +20,4 @@ thiserror = "1.0"
 trybuild = "1.0"
 
 [dependencies]
-tracing-error = { git = "https://github.com/yaahc/tokio-trace-nursery.git", branch = "eliza/error-sketch" }
+tracing-error = { git = "https://github.com/tokio-rs/tracing.git", branch = "eliza/depath" }

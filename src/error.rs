@@ -87,7 +87,14 @@ impl Error {
         };
 
         // Safety: passing vtable that operates on the right type E.
-        unsafe { Error::construct(error, vtable, backtrace, tracing_error::Context::current()) }
+        unsafe {
+            Error::construct(
+                error,
+                vtable,
+                backtrace,
+                tracing_error::SpanTrace::capture(),
+            )
+        }
     }
 
     pub(crate) fn from_adhoc<M>(message: M, backtrace: Option<Backtrace>) -> Self
@@ -108,7 +115,14 @@ impl Error {
 
         // Safety: MessageError is repr(transparent) so it is okay for the
         // vtable to allow casting the MessageError<M> to M.
-        unsafe { Error::construct(error, vtable, backtrace, tracing_error::Context::current()) }
+        unsafe {
+            Error::construct(
+                error,
+                vtable,
+                backtrace,
+                tracing_error::SpanTrace::capture(),
+            )
+        }
     }
 
     pub(crate) fn from_display<M>(message: M, backtrace: Option<Backtrace>) -> Self
@@ -129,7 +143,14 @@ impl Error {
 
         // Safety: DisplayError is repr(transparent) so it is okay for the
         // vtable to allow casting the DisplayError<M> to M.
-        unsafe { Error::construct(error, vtable, backtrace, tracing_error::Context::current()) }
+        unsafe {
+            Error::construct(
+                error,
+                vtable,
+                backtrace,
+                tracing_error::SpanTrace::capture(),
+            )
+        }
     }
 
     #[cfg(feature = "std")]
@@ -151,7 +172,14 @@ impl Error {
         };
 
         // Safety: passing vtable that operates on the right type.
-        unsafe { Error::construct(error, vtable, backtrace, tracing_error::Context::current()) }
+        unsafe {
+            Error::construct(
+                error,
+                vtable,
+                backtrace,
+                tracing_error::SpanTrace::capture(),
+            )
+        }
     }
 
     #[cfg(feature = "std")]
@@ -173,7 +201,14 @@ impl Error {
 
         // Safety: BoxedError is repr(transparent) so it is okay for the vtable
         // to allow casting to Box<dyn StdError + Send + Sync>.
-        unsafe { Error::construct(error, vtable, backtrace, tracing_error::Context::current()) }
+        unsafe {
+            Error::construct(
+                error,
+                vtable,
+                backtrace,
+                tracing_error::SpanTrace::capture(),
+            )
+        }
     }
 
     // Takes backtrace as argument rather than capturing it here so that the
@@ -185,7 +220,7 @@ impl Error {
         error: E,
         vtable: &'static ErrorVTable,
         backtrace: Option<Backtrace>,
-        span_backtrace: Option<tracing_error::Context>,
+        span_backtrace: tracing_error::SpanTrace,
     ) -> Self
     where
         E: StdError + Send + Sync + 'static,
@@ -261,11 +296,11 @@ impl Error {
     ///     })
     /// }
     /// ```
-    pub fn context<C>(mut self, context: C) -> Self
+    pub fn context<C>(self, context: C) -> Self
     where
         C: Display + Send + Sync + 'static,
     {
-        let span_backtrace = self.inner.span_backtrace.take();
+        let span_backtrace = self.inner.span_backtrace.clone();
 
         let error: ContextError<C, Error> = ContextError {
             context,
@@ -676,7 +711,7 @@ where
 pub(crate) struct ErrorImpl<E> {
     vtable: &'static ErrorVTable,
     backtrace: Option<Backtrace>,
-    pub(crate) span_backtrace: Option<tracing_error::Context>,
+    pub(crate) span_backtrace: tracing_error::SpanTrace,
     // NOTE: Don't use directly. Use only through vtable. Erased type may have
     // different alignment.
     _object: E,

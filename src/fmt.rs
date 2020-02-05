@@ -9,7 +9,7 @@ pub struct ErrorInfo<'a> {
     error: &'a (dyn std::error::Error + 'static),
     #[cfg(backtrace)]
     backtrace: &'a Backtrace,
-    span_backtrace: Option<&'a tracing_error::Context>,
+    span_backtrace: &'a tracing_error::SpanTrace,
 }
 
 trait ErrorFormatter {
@@ -36,11 +36,7 @@ impl ErrorFormatter for RootCauseFirst {
             write!(Indented::numbered(f, n), "{}", error.to_string().trim())?;
         }
 
-        if let Some(span_context) = span_backtrace.as_ref() {
-            let span_backtrace = span_context.span_backtrace();
-            write!(f, "\n\nContext:\n")?;
-            write!(f, "{}", span_backtrace)?;
-        }
+        write!(f, "\n\n{}", span_backtrace)?;
 
         #[cfg(backtrace)]
         {
@@ -79,11 +75,7 @@ impl ErrorFormatter for RootCauseLast {
             writeln!(f)?;
         }
 
-        if let Some(span_context) = span_backtrace.as_ref() {
-            let span_backtrace = span_context.span_backtrace();
-            write!(f, "\n\nContext:\n")?;
-            write!(f, "{}", span_backtrace)?;
-        }
+        write!(f, "\n\n{}", span_backtrace)?;
 
         #[cfg(backtrace)]
         {
@@ -129,7 +121,7 @@ impl ErrorImpl<()> {
                 error,
                 #[cfg(backtrace)]
                 backtrace: self.backtrace(),
-                span_backtrace: self.span_backtrace.as_ref(),
+                span_backtrace: &self.span_backtrace,
             },
             f,
         )
